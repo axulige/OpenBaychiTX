@@ -5,8 +5,8 @@
 // Version Number     : 2.1
 // Latest Code Update : 2014-05-16
 
-// Версия и номер компиляции. Используется для проверки целостности программы
-// При модификации программы необходимо изменить одно из этих чисел 
+// Версия и номер компиляции. Используется для проверки целостности программы. Versin and compilation number. Used for check program.
+// При модификации программы необходимо изменить одно из этих чисел . If you modify program, cheng one of digits
 unsigned char version[] = { 8, 1 };
 
 //####### TX BOARD TYPE #######
@@ -19,7 +19,7 @@ unsigned char version[] = { 8, 1 };
 
 #define TX_BOARD_TYPE 1
 
-// Проверка соответсвия типы платы настройкам Arduino
+// Проверка соответсвия типы платы настройкам Arduino. Check the transmitter 
 //
 #if (TX_BOARD_TYPE == 6)          // HawkEye DeluxeTX (Atmega32u4) 
 #if (__AVR_ATmega32U4__ != 1)
@@ -31,46 +31,47 @@ unsigned char version[] = { 8, 1 };
 #endif
 #endif
 
-// Время для входа в меню
+// Время для входа в меню . Time to go into menu (10 seconds)
 #define MENU_WAIT_TIME 9999
 
 //######### TRANSMISSION VARIABLES ##########
 
-#define CARRIER_FREQUENCY  433075  // 433Mhz startup frequency !!! не менять
+#define CARRIER_FREQUENCY  433075  // 433Mhz startup frequency !!! не менять Don't change
 #define HOPPING_STEP_SIZE  6 // 60kHz hopping steps
 #define HOPE_NUM          8  /* number of hope frequensies */ 
 
 //###### HOPPING CHANNELS #######
-//Каналы прыжков (регистры 11-18) Select the hopping channels between 0-255
+//Каналы прыжков (регистры 11-18) Select the hopping channels between 0-255. Register 11-18 (in menu)
 //Frequency = CARRIER_FREQUENCY + (StepSize(60khz)* Channel_Number) 
-static unsigned char hop_list[HOPE_NUM] = {77,147,89,167,109,189,127,209};   // по умолчанию - мои частоты
+static unsigned char hop_list[HOPE_NUM] = {77,147,89,167,109,189,127,209};   // по умолчанию - мои частоты. Default hopping channels
 
 // Четыре первых регистра настроек (S/N, номер Bind, поправка частоты, разрешение коррекции частоты и детектирования FS ретранслятора
-static unsigned char Regs4[7] = {99 ,72, 204, 1, 0, 0, 0 };    // последний бай - уровень отладки
-// Регистры управления мощносью (19-23): канал, мошность1 - мощность3 (0-7).
+//Four first register of settings (s/n, Bind number, frequency correction, allow frequency correction, detect FS of retranslator)
+static unsigned char Regs4[7] = {99 ,72, 204, 1, 0, 0, 0 };    // последний байт - уровень отладки. Last byte - debug level
+// Регистры управления мощносью (19-23): канал, мошность1 - мощность3 (0-7). Pewer ajustment registers (19-23): Channel, Power1 - Power2, Power3 (0-7)
 #if(TX_BOARD_TYPE == 5)
-static unsigned char  PowReg[5] =  { 8, 0, 2, 7, 128 };       // последне значение - константа для УМ Expert 2G 
+static unsigned char  PowReg[5] =  { 8, 0, 2, 7, 128 };       // последне значение - константа для УМ Expert 2G. Only for Expert2G
 #else
-static unsigned char  PowReg[4] =  { 8, 0, 2, 7};             // что-бы не терять настройки при переходе с предыдущих версий, не исп. 2G 
+static unsigned char  PowReg[4] =  { 8, 0, 2, 7};             // что-бы не терять настройки при переходе с предыдущих версий, не исп. 2G. Save adjustment
 #endif
 
 //###### SERIAL PORT SPEED #######
-#define SERIAL_BAUD_RATE 38400  // как у Эксперта
-#define REGS_NUM 42              // количестов отображаемых регистров настроек
+#define SERIAL_BAUD_RATE 38400  // как у Эксперта. Menu speed input
+#define REGS_NUM 42              // количестов отображаемых регистров настроек. Quantity showing regiasters of adjustment
 
 // Параметры пакета
-#define RF_PACK_SIZE 16                 /* размер данных в пакете */
-#define RC_CHANNEL_COUNT 12             /* количество каналов управления и импульсов на PPM In */
+#define RF_PACK_SIZE 16                 /* размер данных в пакете. Size of data in packet */ 
+#define RC_CHANNEL_COUNT 12             /* количество каналов управления и импульсов на PPM In. Quantity of control Channels and pulse oh PPM IN. Yes 12CHANNElS !!! */
 
-unsigned char RF_Tx_Buffer[RF_PACK_SIZE];  // буфер отсылаемого кадра
+unsigned char RF_Tx_Buffer[RF_PACK_SIZE];  // буфер отсылаемого кадра. Buffer of sending frame
 unsigned char hopping_channel = 0;
-unsigned long time,start_time;   // текущее время в мс и время старта
+unsigned long time,start_time;   // текущее время в мс и время старта. current timein ms and start time 
 
-// unsigned char RF_Mode = 0;  /* для RFMки */
-signed char curTemperature=0;        // последняя температура, считанная из RFMки -64 ... +127
-signed char freqCorr=0;              // поправка к частоте кварца в зависимости от t (ppm)  
-unsigned char lastPower = 0;         // текущий режим мощности
-unsigned int maxDif=0;               // для контроля загруженности
+// unsigned char RF_Mode = 0;  /* для RFMки . For RFM*/
+signed char curTemperature=0;        // последняя температура, считанная из RFMки -64 ... +127 . Last temp, reading for RFM -64 ... +127
+signed char freqCorr=0;              // поправка к частоте кварца в зависимости от t (ppm). Frequensies correction, depend of Temperature RFM (ppm)
+unsigned char lastPower = 0;         // текущий режим мощности. Current Power
+unsigned int maxDif=0;               // для контроля загруженности. For control workload
 
 #define Available 0
 #define Transmit 1
@@ -78,7 +79,7 @@ unsigned int maxDif=0;               // для контроля загружен
 #define Receive 3
 #define Received 4
 
-#define Terminal Serial             /* По умолчанию вся информация идет через стандартный последовательный порт UART */
+#define Terminal Serial             /* По умолчанию вся информация идет через стандартный последовательный порт UART. Default all information via UART */
 
 #if (TX_BOARD_TYPE == 1)           // Expert Tiny module
     //## RFM22BP Pinouts for Tx Tiny Board
@@ -116,14 +117,14 @@ unsigned int maxDif=0;               // для контроля загружен
     #define Red_LED_ON   PORTD |= _BV(6);  
     #define Red_LED_OFF  PORTD &= ~_BV(6); 
     
-    #define Green_LED_ON  PORTD |= _BV(6); // проецируем
+    #define Green_LED_ON  PORTD |= _BV(6); // проецируемю projection
     #define Green_LED_OFF PORTD &= ~_BV(6);    
 
-// Аппаратный переключатель мощности
+// Аппаратный переключатель мощности. Power adjustment
     #define SW1_IN A2  // Power switch 1 on 25 pin
     #define SW2_IN A3  // Power switch 2 on 26 pin  
-    #define SW1_IS_ON (PINC & 0x04) == 0x00  // проверка sw1 
-    #define SW2_IS_ON (PINC & 0x08) == 0x00  // проверка sw2 
+    #define SW1_IS_ON (PINC & 0x04) == 0x00  // проверка sw1 . Check Switch 1
+    #define SW2_IS_ON (PINC & 0x08) == 0x00  // проверка sw2 . Check Switch 2
 
 #endif
 
@@ -166,15 +167,15 @@ unsigned int maxDif=0;               // для контроля загружен
       #define Green_LED_ON  PORTB |= _BV(5);
       #define Green_LED_OFF  PORTB &= ~_BV(5);
     
-// Аппаратный переключатель мощности
+// Аппаратный переключатель мощности. Toggle switch Power adjustment.
     #define SW1_IN 5  // Power switch 1 on 9 pin
     #define SW2_IN 6  // Power switch 2 on 10 pin  
-    #define SW1_IS_ON (PIND & 0x20) == 0x00  // проверка sw1 
-    #define SW2_IS_ON (PIND & 0x40) == 0x00  // проверка sw2 
+    #define SW1_IS_ON (PIND & 0x20) == 0x00  // проверка sw1 . Check Switch 1
+    #define SW2_IS_ON (PIND & 0x40) == 0x00  // проверка sw2 . Check Switch 2
 
 #endif
 
-#if (TX_BOARD_TYPE == 3)              // Orange transmitter  через прерывания
+#if (TX_BOARD_TYPE == 3)              // Orange transmitter  через прерывания. Orange transmitter via interrupt
       //### PINOUTS OF OpenLRS Rx V2 Board
       #define SDO_pin 9
       #define SDI_pin 8        
@@ -214,11 +215,11 @@ unsigned int maxDif=0;               // для контроля загружен
      #define PPM_Pin_Interrupt_Setup  PCMSK2 = 0x08;PCICR|=(1<<PCIE2);
      #define PPM_Signal_Interrupt PCINT2_vect
 
-// Аппаратный переключатель мощности
+// Аппаратный переключатель мощностию. Toggle switch Power adjustment.
     #define SW1_IN A2  // Power switch 1 on 25 pin
     #define SW2_IN A3  // Power switch 2 on 26 pin  
-    #define SW1_IS_ON (PINC & 0x04) == 0x00  // проверка sw1 
-    #define SW2_IS_ON (PINC & 0x08) == 0x00  // проверка sw2 
+    #define SW1_IS_ON (PINC & 0x04) == 0x00  // проверка sw1. Check Switch 1
+    #define SW2_IS_ON (PINC & 0x08) == 0x00  // проверка sw2 . Check Switch 2
      
 #endif
 
@@ -226,13 +227,13 @@ unsigned int maxDif=0;               // для контроля загружен
 #if (TX_BOARD_TYPE == 4)           // HawkEye TX module
     #define PPM_IN 8
     #define USE_ICP1              // Use ICP1 in input capture mode
-    #define SWAP_RXTX             // управление RX/TX ки подключено наоборот 
+    #define SWAP_RXTX             // управление RX/TX ки подключено наоборот . Swap RX/TX
     #define BUTTON A0
     #define RED_LED_pin 6
     #define GREEN_LED_pin 5
-    #define RFM_POWER_PIN 7      // цепь управления питанием RFMки - 11я ножка
-    #define RFM_POWER_MIN PORTD |= 0x80      // понизить мощу
-    #define RFM_POWER_MAX PORTD &= 0x7f      // повысить мощу
+    #define RFM_POWER_PIN 7      // цепь управления питанием RFMки - 11я ножка. Power adjust via RFM , 11 leg
+    #define RFM_POWER_MIN PORTD |= 0x80      // понизить мощу. Increase Power
+    #define RFM_POWER_MAX PORTD &= 0x7f      // повысить мощу. Decrease Power
     
     #define Red_LED_ON PORTD |= _BV(6)
     #define Red_LED_OFF PORTD &= ~_BV(6)
@@ -256,11 +257,11 @@ unsigned int maxDif=0;               // для контроля загружен
     #define nSel_pin 4
     #define IRQ_interrupt 0
 
-// Аппаратный переключатель мощности
+// Аппаратный переключатель мощности. Toggle switch Power adjustment.
     #define SW1_IN A1  // Power switch 1 on 24 pin
     #define SW2_IN A2  // Power switch 2 on 25 pin  
-    #define SW1_IS_ON (PINC & 0x02) == 0x00  // проверка sw1 
-    #define SW2_IS_ON (PINC & 0x04) == 0x00  // проверка sw2 
+    #define SW1_IS_ON (PINC & 0x02) == 0x00  // проверка sw1 . Check Switch 1
+    #define SW2_IS_ON (PINC & 0x04) == 0x00  // проверка sw2 . Check Switch 2
 #endif
 
 #if (TX_BOARD_TYPE == 5)              // Expert 2G board (under constraction)
@@ -301,19 +302,19 @@ unsigned int maxDif=0;               // для контроля загружен
     #define Green_LED_ON  PORTC |= _BV(3);  // C3
     #define Green_LED_OFF PORTC &= ~_BV(3);    
 
-// Аппаратный переключатель мощности
+// Аппаратный переключатель мощности. Toggle switch Power adjustment.
     #define SW1_IN A0  // Power switch 1 on 23 pin
     #define SW2_IN A1  // Power switch 2 on 24 pin  
-    #define SW1_IS_ON (PINC & 0x01) == 0x00  // проверка sw1 
-    #define SW2_IS_ON (PINC & 0x02) == 0x00  // проверка sw2 
-    #define PA_VOUT_PIN 5  // PWM выход для управления мощностью       
+    #define SW1_IS_ON (PINC & 0x01) == 0x00  // проверка sw1 . Check Switch 1
+    #define SW2_IS_ON (PINC & 0x02) == 0x00  // проверка sw2 .Check Switch 2
+    #define PA_VOUT_PIN 5  // PWM выход для управления мощностью  . PWM output Power control    
 #endif
 
 #if (TX_BOARD_TYPE == 6)          // HawkEye DeluxeTX (Atmega32u4) 
     #define IRQ_pin 11 //PB7
     #define nSel_pin 12
 
-    #define SWAP_RXTX             // управление RX/TX ки подключено наоборот 
+    #define SWAP_RXTX             // управление RX/TX ки подключено наоборот . SWAP_RXTX
     #define PPM_IN 4 // ICP1
     #define USE_ICP1 // use ICP1 for PPM input for less jitter
     #define BUTTON A0
@@ -343,10 +344,10 @@ unsigned int maxDif=0;               // для контроля загружен
     #define Green_LED_ON   PORTC |= (1<<PORTC6);
     #define Green_LED_OFF  PORTC &= ~(1<<PORTC6);
 
-    #define Terminal Serial1           /* Работа с терминалом через UART. Если отключить - поток пойдет через USB */
+    #define Terminal Serial1           /* Работа с терминалом через UART. Если отключить - поток пойдет через USB. Terminal work via UART, If OFF- via USB */
 #endif
 
-#if (TX_BOARD_TYPE == 7)              // Orange reciever тест через прерывания D3
+#if (TX_BOARD_TYPE == 7)              // Orange reciever тест через прерывания D3. Orange reciever, test via interrupt D3
       //### PINOUTS OF OpenLRS Rx V2 Board
       #define SDO_pin A0
       #define SDI_pin A1        
@@ -397,7 +398,7 @@ unsigned char _spi_read(unsigned char address);
 void to_sleep_mode(void);
 void ppmLoop(unsigned char n=12);
 extern unsigned int mppmDif,maxDif;
-extern unsigned int PPM[];     // текущие длительности канальных импульсов
+extern unsigned int PPM[];     // текущие длительности канальных импульсов. Current channel pulse
 extern unsigned char ppmAge;   // age of PPM data
-void printlnPGM(char *adr, char ln=1);   // печать строки из памяти программы ln - перевод строки
+void printlnPGM(char *adr, char ln=1);   // печать строки из памяти программы ln - перевод строки. Print sring from memory, Ln - return string
 void _spi_write(unsigned char, unsigned char);  // Gfsk,  fd[8] =0, no invert for Tx/Rx data, fifo mode, txclk -->gpio 
