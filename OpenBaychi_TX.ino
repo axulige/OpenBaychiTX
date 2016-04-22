@@ -16,7 +16,7 @@ byte FSstate = 0;          // 1 = waiting timer, 2 = send FS, 3 sent waiting BUT
 unsigned long FStime = 0;  // time when button went down...
 unsigned long lastSent = 0;
 
-void checkFS(bool led=true)        // проверка нажатия кнопочки для отсылки FS кадра
+void checkFS(bool led=true)        // проверка нажатия кнопочки для отсылки FS кадра. Check button, to send FS
 {
   switch (FSstate) {
   case 0:
@@ -56,11 +56,11 @@ void setup(void)
 #endif
 
 #ifdef RFM_POWER_PIN    
-   pinMode(RFM_POWER_PIN, OUTPUT); // управление питанием RFMки
+   pinMode(RFM_POWER_PIN, OUTPUT); // управление питанием RFMки. Power control of RFM
    RFM_POWER_MIN;
 #endif
 
-#if(TX_BOARD_TYPE == 6)            // Для Deluxe номера выводов почему-то не определены
+#if(TX_BOARD_TYPE == 6)            // Для Deluxe номера выводов почему-то не определены. For Deluxe Pin number not define.
    DDRB |= (1<<DDB1); // SCK PB1 output
    DDRB |= (1<<DDB2); // SDI/MOSI PB2 output
    DDRB &= ~(1<<DDB3); // SDO/MISO PB3 input
@@ -85,14 +85,14 @@ void setup(void)
    pinMode(BUTTON, INPUT);   //Buton
    digitalWrite(BUTTON, HIGH);
 
-#if (TX_BOARD_TYPE == 5)              // Только для Expert 2G board
+#if (TX_BOARD_TYPE == 5)              // Только для Expert 2G board. Only for Expert2G
   pinMode(PA_VOUT_PIN, OUTPUT); 
 #endif
 
 #ifdef SW1_IN
-   pinMode(SW1_IN, INPUT);   // ключ 1
+   pinMode(SW1_IN, INPUT);   // ключ 1 . Key 1  
    digitalWrite(SW1_IN, HIGH);
-   pinMode(SW2_IN, INPUT);   // ключ 2
+   pinMode(SW2_IN, INPUT);   // ключ 2. Key 2
    digitalWrite(SW2_IN, HIGH);
 #endif
 
@@ -102,55 +102,55 @@ void setup(void)
    Terminal.begin(SERIAL_BAUD_RATE);
 
    setupPPMinput();
-   EIMSK &=~1;          // запрещаем INT0 
+   EIMSK &=~1;          // запрещаем INT0. disable INT0
    sei();
 }
 
-void loop(void)        // главный фоновый цикл 
+void loop(void)        // главный фоновый цикл. Main cycle
 {
   byte i,j,k;
   word pwm;
 
   printHeader();
-  wdt_enable(WDTO_1S);     // запускаем сторожевой таймер 
+  wdt_enable(WDTO_1S);     // запускаем сторожевой таймер. Watchdog ON
   Red_LED_ON;
   delay(99);
   for(byte i=0; i<RC_CHANNEL_COUNT; i++) PPM[i]=0;
   Red_LED_OFF;
-  makeAutoBind(0);     // проверяем на необходимость автобинда и делаем его, если надо
-  eeprom_check();      // Считываем и проверяем FLASH и настройки    
+  makeAutoBind(0);     // проверяем на необходимость автобинда и делаем его, если надо. Check autobind and make it, if necessery 
+  eeprom_check();      // Считываем и проверяем FLASH и настройки. Reding and checking FLASH and settings    
 
   RF22B_init_parameter();
   rx_reset();
   ppmAge = 255;
 
   Terminal.println();
-  showState();     // отображаем режим и дебуг информацию 
+  showState();     // отображаем режим и дебуг информацию. Show mode and debug info.
 
-  for(i=0; i<32; i++) {   // ждем старта RFM ки до 3-х секунд 
-    getTemper();           // меряем темперартуру
-    if (curTemperature > -40 && _spi_read(0x0C) != 0) break;  // если даные вменяемы, можно стартовать
+  for(i=0; i<32; i++) {   // ждем старта RFM ки до 3-х секунд . Wating start of RFM for 3 sec
+    getTemper();           // меряем темперартуру. Take temperature (Celsium degree).
+    if (curTemperature > -40 && _spi_read(0x0C) != 0) break;  // если даные вменяемы, можно стартовать. If all OK, starting
     RF22B_init_parameter();
     delay(99);          
   }
 
-#if (TX_BOARD_TYPE == 5)              // Только для Expert 2G board
+#if (TX_BOARD_TYPE == 5)              // Только для Expert 2G board. Only for Expert 2G board 
   analogWrite(5,PowReg[4]);           // установим напряжение для УМ
 #endif
 
   rx_reset();
 
-  mppmDif=maxDif=0;       // сброс статистики
+  mppmDif=maxDif=0;       // сброс статистики. reset statistic
   unsigned long time = micros();
   lastSent=time; 
 
   while(1) {
     ppmLoop();
-    wdt_reset();               // поддержка сторожевого таймера
+    wdt_reset();               // поддержка сторожевого таймера. Watchdog
 
-    if(checkMenu()) {          // проверяем на вход в меню
+    if(checkMenu()) {          // проверяем на вход в меню. Check menu input
        doMenu(); 
-#if (TX_BOARD_TYPE == 5)              // Только для Expert 2G board
+#if (TX_BOARD_TYPE == 5)              // Только для Expert 2G board. Only for Expert 2G board
   analogWrite(5,PowReg[4]);           // установим напряжение для УМ
 #endif
        lastSent=micros(); 
@@ -169,26 +169,26 @@ re_init:
 
     ppmLoop();
     time = micros();
-    i=checkPPM();                   // Проверяем PPM на запрет передачи      
+    i=checkPPM();                   // Проверяем PPM на запрет передачи  . Check PPM for desable transmition    
     if(i && ppmAge < 7) {
-      checkFS();                               // отслеживаем нажатие кнопочки
-      pwm=time - lastSent;                     //  проверяем не пора ли готовить отправку
+      checkFS();                               // отслеживаем нажатие кнопочки. Check Button
+      pwm=time - lastSent;                     //  проверяем не пора ли готовить отправку. Check rady for sending
       if(pwm >= 28999) {
-        if(pwm > 32999) lastSent=time-31500;   // при слишком больших разбежках поправим время отправки
+        if(pwm > 32999) lastSent=time-31500;   // при слишком больших разбежках поправим время отправки. Adjust sending time
         Hopping();
-        if(!to_tx_mode()) goto re_init;        // формируем и посылаем пакет
-        getTemper();                           // меряем темперартуру
+        if(!to_tx_mode()) goto re_init;        // формируем и посылаем пакет. Prepare packet and send
+        getTemper();                           // меряем темперартуру. Check temperature
         ppmAge++;
-        showState();                           // отображаем режим и дебуг информацию 
+        showState();                           // отображаем режим и дебуг информацию . Show mode and debug info.
       }
     } else if(ppmAge == 255) {
-       getTemper();                            // меряем темперартуру
+       getTemper();                            // меряем темперартуру. Check temperature
        showState(); 
        Sleep(99);
     } else if(ppmAge > 5 || i == 0) {
 extern byte prevFS;  
-      if(!prevFS) to_sleep_mode();             // нет PPM - нет и передачи
-       getTemper();                            // меряем темперартуру
+      if(!prevFS) to_sleep_mode();             // нет PPM - нет и передачи. No PPM - not send
+       getTemper();                            // меряем темперартуру. Check temperature
        showState(); 
        Sleep(99);
     }
