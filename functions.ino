@@ -8,11 +8,11 @@
 // Project page       : https://github.com/baychi/OpenExpertTX
 // **********************************************************
 
-void Red_LED_Blink(unsigned short blink_count)  // на самом деле индикатор у нас только один :)
+void Red_LED_Blink(unsigned short blink_count)  // на самом деле индикатор у нас только один :). Blinking
 {
   word i;
   for (i=0;i<blink_count;i++)     {
-     wdt_reset();               //  поддержка сторожевого таймера
+     wdt_reset();               //  поддержка сторожевого таймера. Watchdog support
      Sleep(250);
      Green_LED_ON;
      Sleep(250);
@@ -27,7 +27,7 @@ void Red_LED_Blink(unsigned short blink_count)  // на самом деле ин
 }
 
 
-// Вычисление CRC8 по массиву данных
+// Вычисление CRC8 по массиву данных. Account CRC8 , array data
 //
 unsigned char CRC8(unsigned char buf[], unsigned char len)
 {
@@ -44,14 +44,14 @@ unsigned char CRC8(unsigned char buf[], unsigned char len)
    return crc;
 }  
 
-// Пауза с отдачей квантов
+// Пауза с отдачей квантов. Pause seng quanta
 void Sleep(word ms) 
 {
   unsigned long t=millis()+ms;
   
   while(millis() < t) ppmLoop();
 }
-// Пауза с отдачей квантов
+// Пауза с отдачей квантов. Pause seng quanta
 void SleepMks(word mks) 
 {
   unsigned long t=micros()+mks;
